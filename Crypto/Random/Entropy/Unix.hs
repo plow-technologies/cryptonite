@@ -45,7 +45,9 @@ testOpen filepath = do
     d <- openDev filepath
     case d of
         Nothing -> return Nothing
-        Just h  -> closeDev h >> return (Just filepath)
+        Just h  -> close' h`E.catch` \(_ :: IOException) -> return Nothing
+  where
+    close' h = closeDev h >> return (Just filepath)
 
 openDev :: String -> IO (Maybe H)
 openDev filepath = (Just `fmap` openAndNoBuffering) `E.catch` \(_ :: IOException) -> return Nothing
