@@ -62,10 +62,10 @@ withDev :: HasCallStack => String -> (H -> IO a) -> IO a
 withDev filepath f = openDev filepath >>= \h ->
     case h of
         Nothing -> error ("device " ++ filepath ++ " cannot be grabbed")
-        Just fd -> f fd `E.finally` (try' $ closeDev fd)
-  where
-    try' :: IO a -> IO (Either IOException a)
-    try' = E.try
+        Just fd -> f fd `E.finally` (closeDev fd)
+--   where
+--     try' :: IO a -> IO (Either IOException a)
+--     try' = E.try
 
 closeDev :: H -> IO ()
 closeDev h = hClose h
