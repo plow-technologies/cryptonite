@@ -19,6 +19,8 @@ import Control.Exception as E
 --import System.Posix.Types (Fd)
 import System.IO
 
+import GHC.Stack
+
 type H = Handle
 type DeviceName = String
 
@@ -40,7 +42,7 @@ instance EntropySource DevURandom where
         withDev name $ \h -> gatherDevEntropy h ptr n
     entropyClose (DevURandom _)  = return ()
 
-testOpen :: DeviceName -> IO (Maybe DeviceName)
+testOpen :: HasCallStack => DeviceName -> IO (Maybe DeviceName)
 testOpen filepath = do
     d <- openDev filepath
     case d of
@@ -50,17 +52,20 @@ testOpen filepath = do
     close' h = closeDev h >> return (Just filepath)
 
 openDev :: String -> IO (Maybe H)
-openDev filepath = (Just `fmap` openAndNoBuffering) `E.catch` \(_ :: IOException) -> return Nothing
+openDev filepath = (Just `fmap` openAndNoBuffering)
   where openAndNoBuffering = do
             h <- openBinaryFile filepath ReadMode
             hSetBuffering h NoBuffering
             return h
 
-withDev :: String -> (H -> IO a) -> IO a
+withDev :: HasCallStack => String -> (H -> IO a) -> IO a
 withDev filepath f = openDev filepath >>= \h ->
     case h of
         Nothing -> error ("device " ++ filepath ++ " cannot be grabbed")
-        Just fd -> f fd `E.finally` closeDev fd
+        Just fd -> f fd `E.finally` (try' $ closeDev fd)
+  where
+    try' :: IO a -> IO (Either IOException a)
+    try' = E.try
 
 closeDev :: H -> IO ()
 closeDev h = hClose h
