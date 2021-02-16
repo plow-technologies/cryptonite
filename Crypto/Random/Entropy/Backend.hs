@@ -36,7 +36,7 @@ supportedBackends =
 #ifdef WINDOWS
     openBackend (Proxy :: Proxy WinCryptoAPI)
 #else
-    openBackend (Proxy :: Proxy DevRandom), openBackend (Proxy :: Proxy DevURandom)
+    openBackend (Proxy :: Proxy DevURandom)
 #endif
     ]
 
