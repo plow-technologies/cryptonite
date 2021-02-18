@@ -22,7 +22,7 @@ import Crypto.Random.Entropy.RDRand
 #endif
 #ifdef WINDOWS
 import Crypto.Random.Entropy.Windows
-#elif SUPPORT_GETRANDOM
+#elif defined SUPPORT_GETRANDOM
 import Crypto.Random.Entropy.GetRandom
 #else
 import Crypto.Random.Entropy.Unix
